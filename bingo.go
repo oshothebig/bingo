@@ -85,9 +85,17 @@ func (e *refEncoder) encode(v reflect.Value) error {
 		}
 		return nil
 	case reflect.Struct:
+		t := v.Type()
 		l := v.NumField()
 		for i := 0; i < l; i++ {
-			if err := e.encode(v.Field(i)); err != nil {
+			var field reflect.Value
+			if fv := v.Field(i); fv.CanSet() || t.Field(i).Name != "_" {
+				field = fv
+			} else {
+				field = reflect.Zero(fv.Type())
+			}
+
+			if err := e.encode(field); err != nil {
 				return err
 			}
 		}
