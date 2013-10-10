@@ -83,7 +83,6 @@ func (e *refEncoder) encode(v reflect.Value) error {
 				return err
 			}
 		}
-		return nil
 	case reflect.Struct:
 		t := v.Type()
 		l := v.NumField()
@@ -99,17 +98,14 @@ func (e *refEncoder) encode(v reflect.Value) error {
 				return err
 			}
 		}
-		return nil
 	case reflect.Interface:
 		if err := e.encode(v.Elem()); err != nil {
 			return err
 		}
-		return nil
 	case reflect.Map, reflect.Func, reflect.Int, reflect.Uint, reflect.Chan:
 		return errors.New("Unsupported type")
-	default:
-		return errors.New("Not implemented")
 	}
+	return nil
 }
 
 type Encoder struct {

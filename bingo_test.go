@@ -228,6 +228,17 @@ func TestMarshalFlatStructWithBlankField(t *testing.T) {
 	checkMarshal(t, v, b)
 }
 
+type flatStructWithPtrBlankField struct {
+	Age uint8
+	_   *uint16
+}
+
+func TestFlatStructWithPtrBlankField(t *testing.T) {
+	v := flatStructWithPtrBlankField{Age: 31}
+	b := []byte{0x1f}
+	checkMarshal(t, v, b)
+}
+
 func TestMarshalUnsupportedType(t *testing.T) {
 	m := map[string]uint32{
 		"One": 1,
