@@ -9,6 +9,13 @@ func benchMarshal(b *testing.B, v interface{}) {
 	}
 }
 
+func benchShiftBytes(b *testing.B, data []byte, n uint, shiftFunc func([]byte, uint) []byte) {
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		shiftFunc(data, n)
+	}
+}
+
 func BenchmarkMarshalUint8(b *testing.B) {
 	var v uint8
 	benchMarshal(b, v)
@@ -90,4 +97,22 @@ func createStringWithLength(n int) string {
 		s += "a"
 	}
 	return s
+}
+
+func BenchmarkLeftShift32(b *testing.B) {
+	n := uint(32)
+	data := make([]byte, n)
+	benchShiftBytes(b, data, 1, leftShiftBytes)
+}
+
+func BenchmarkLeftShift1024(b *testing.B) {
+	n := uint(1024)
+	data := make([]byte, n)
+	benchShiftBytes(b, data, 1, leftShiftBytes)
+}
+
+func BenchmarkLeftShift32768(b *testing.B) {
+	n := uint(32768)
+	data := make([]byte, n)
+	benchShiftBytes(b, data, 1, leftShiftBytes)
 }
