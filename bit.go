@@ -37,12 +37,12 @@ func leftShiftBytes(b []byte, n uint) []byte {
 	shifted := make([]byte, length)
 
 	for i := shiftBytes; i < length; i++ {
-		indexFrom := i - shiftBytes
+		srcIndex := i - shiftBytes
 		var carry byte
-		if indexFrom >= 1 {
-			carry = b[indexFrom-1] >> (8 - shiftBits)
+		if srcIndex >= 1 {
+			carry = b[srcIndex-1] >> (8 - shiftBits)
 		}
-		shifted[i] = (b[indexFrom] << shiftBits) | carry
+		shifted[i] = (b[srcIndex] << shiftBits) | carry
 	}
 
 	return shifted
@@ -55,12 +55,12 @@ func rightShiftBytes(b []byte, n uint) []byte {
 	shifted := make([]byte, length)
 
 	for i := uint(0); i < length-shiftBytes; i++ {
-		indexFrom := i + shiftBytes
+		srcIndex := i + shiftBytes
 		var carry byte
-		if indexFrom+1 < length {
-			carry = b[indexFrom+1] << (8 - shiftBits)
+		if srcIndex+1 < length {
+			carry = b[srcIndex+1] << (8 - shiftBits)
 		}
-		shifted[i] = carry | (b[indexFrom] >> shiftBits)
+		shifted[i] = carry | (b[srcIndex] >> shiftBits)
 	}
 
 	return shifted
