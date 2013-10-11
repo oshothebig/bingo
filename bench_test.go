@@ -99,6 +99,18 @@ func createStringWithLength(n int) string {
 	return s
 }
 
+func BenchmarkLeftShift64BitsAsBytes(b *testing.B) {
+	data := make([]byte, 8)
+	benchShiftBytes(b, data, 1, leftShiftBytes)
+}
+
+func BenchmarkLeftShift64BitsAsUint64(b *testing.B) {
+	var data uint64
+	for i := 0; i < b.N; i++ {
+		_ = data << 1
+	}
+}
+
 func BenchmarkLeftShift32(b *testing.B) {
 	n := uint(32)
 	data := make([]byte, n)
