@@ -23,7 +23,7 @@ func newBitFields() *bitFields {
 func (b *bitFields) add(v reflect.Value, bit uint) *bitFields {
 	switch v.Kind() {
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
-		reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Bool:
 		b.fields = append(b.fields, bitField{v, bit})
 		b.bits += bit
 	}
@@ -44,6 +44,12 @@ func (b *bitFields) bytes() ([]byte, error) {
 			num = uint64(field.value.Int())
 		case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 			num = field.value.Uint()
+		case reflect.Bool:
+			if field.value.Bool() {
+				num = 1
+			} else {
+				num = 0
+			}
 		}
 
 		// get lower {bits} bits

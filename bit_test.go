@@ -54,6 +54,14 @@ var bitFieldData = []struct {
 		[]bitField{{reflect.ValueOf(uint8(0x7f)), 7}, {reflect.ValueOf(uint8(0)), 1}},
 		[]byte{0xfe},
 	},
+	{
+		[]bitField{{reflect.ValueOf(uint8(0x7f)), 7}, {reflect.ValueOf(false), 1}},
+		[]byte{0xfe},
+	},
+	{
+		[]bitField{{reflect.ValueOf(uint8(0x7f)), 7}, {reflect.ValueOf(true), 1}},
+		[]byte{0xff},
+	},
 }
 
 func TestBitFieldsAdd(t *testing.T) {
