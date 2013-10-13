@@ -38,26 +38,58 @@ var rightShiftData = []struct {
 	{[]byte{0x34, 0x12}, 9, []byte{0x09, 0x00}},
 }
 
+var bitFieldData = []struct {
+	fields   []bitField
+	expected []byte
+}{
+	{
+		[]bitField{{reflect.ValueOf(uint8(0x12)), 7}, {reflect.ValueOf(uint16(0x134)), 9}},
+		[]byte{0x25, 0x34},
+	},
+	{
+		[]bitField{{reflect.ValueOf(uint8(0x12)), 5}, {reflect.ValueOf(uint16(0x34)), 7}},
+		[]byte{0x93, 0x40},
+	},
+	{
+		[]bitField{{reflect.ValueOf(uint8(0x7f)), 7}, {reflect.ValueOf(uint8(0)), 1}},
+		[]byte{0xfe},
+	},
+}
+
 func TestBitFieldsAdd(t *testing.T) {
-	f := make(bitFields, 0)
+	f := newBitFields()
 	f = f.add(reflect.ValueOf(uint8(0)), 5)
-	if len(f) != 1 {
+	if len(f.fields) != 1 {
 		t.Error("add() failed, but expected to succeed")
 	}
 
 	f = f.add(reflect.ValueOf(complex64(1+1i)), 5)
-	if len(f) != 1 {
+	if len(f.fields) != 1 {
 		t.Error("add() succeeded, but expected to fail")
 	}
 }
 
 func TestBitFieldBits(t *testing.T) {
-	f := make(bitFields, 0)
+	f := newBitFields()
 	f = f.add(reflect.ValueOf(uint8(0x12)), 5)
 	f = f.add(reflect.ValueOf(uint16(0x34)), 7)
 
-	if f.bits() != 12 {
-		t.Error("Total bits: %d, want %d", f.bits(), 12)
+	if f.bits != 12 {
+		t.Error("Total bits: %d, want %d", f.bits, 12)
+	}
+}
+
+func TestBitFieldsBytes(t *testing.T) {
+	for _, data := range bitFieldData {
+		f := newBitFields()
+		for _, field := range data.fields {
+			f.add(field.value, field.bits)
+		}
+
+		actual, _ := f.bytes()
+		if !bytes.Equal(actual, data.expected) {
+			t.Errorf("%x, want %x", actual, data.expected)
+		}
 	}
 }
 
