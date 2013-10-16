@@ -239,6 +239,28 @@ func TestFlatStructWithPtrBlankField(t *testing.T) {
 	checkMarshal(t, v, b)
 }
 
+type flatStructWithBitFields struct {
+	A uint32
+	B uint8 `bingo:"bits:7"`
+	C bool  `bingo:"bits:1"`
+	D uint16
+}
+
+func TestFlatStructWithBitFields(t *testing.T) {
+	v := flatStructWithBitFields{
+		0x12345678,
+		0x78,
+		true,
+		0x1234,
+	}
+	b := []byte{
+		0x12, 0x34, 0x56, 0x78,
+		0xf1,
+		0x12, 0x34,
+	}
+	checkMarshal(t, v, b)
+}
+
 func TestMarshalUnsupportedType(t *testing.T) {
 	m := map[string]uint32{
 		"One": 1,
@@ -248,4 +270,16 @@ func TestMarshalUnsupportedType(t *testing.T) {
 
 	f := func() {}
 	checkUnsupportedType(t, f)
+}
+
+func TestTagOptions(t *testing.T) {
+	tag := "bits:7"
+	expected := tagOptions{
+		bits: 7,
+	}
+
+	actual := *parseTagOptions(tag)
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("Parsed: %v, want, %v", actual, expected)
+	}
 }

@@ -6,6 +6,8 @@ import (
 	"errors"
 	"io"
 	"reflect"
+	"strconv"
+	"strings"
 )
 
 func boolToUint8(v bool) uint8 {
@@ -54,7 +56,7 @@ func Marshal(data interface{}) (b []byte, err error) {
 	}
 
 	enc := &refEncoder{binary.BigEndian, new(bytes.Buffer)}
-	err = enc.encode(v)
+	err = enc.encode(v, nil)
 	return enc.buf.Bytes(), err
 }
 
@@ -63,7 +65,7 @@ type refEncoder struct {
 	buf   *bytes.Buffer
 }
 
-func (e *refEncoder) encode(v reflect.Value) error {
+func (e *refEncoder) encode(v reflect.Value, opt *tagOptions) error {
 	v = reflect.Indirect(v)
 	switch v.Kind() {
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
@@ -79,7 +81,7 @@ func (e *refEncoder) encode(v reflect.Value) error {
 	case reflect.Array, reflect.Slice:
 		l := v.Len()
 		for i := 0; i < l; i++ {
-			if err := e.encode(v.Index(i)); err != nil {
+			if err := e.encode(v.Index(i), nil); err != nil {
 				return err
 			}
 		}
@@ -94,18 +96,49 @@ func (e *refEncoder) encode(v reflect.Value) error {
 				field = reflect.Zero(fv.Type())
 			}
 
-			if err := e.encode(field); err != nil {
+			if err := e.encode(field, nil); err != nil {
 				return err
 			}
 		}
 	case reflect.Interface:
-		if err := e.encode(v.Elem()); err != nil {
+		if err := e.encode(v.Elem(), nil); err != nil {
 			return err
 		}
 	case reflect.Map, reflect.Func, reflect.Int, reflect.Uint, reflect.Chan:
 		return errors.New("Unsupported type")
 	}
 	return nil
+}
+
+type tagOptions struct {
+	bits uint
+}
+
+func parseTagOptions(tag string) *tagOptions {
+	options := map[string]string{}
+	tokens := strings.Split(tag, ",")
+	for _, token := range tokens {
+		token = strings.TrimSpace(token)
+		keyval := strings.Split(token, ":")
+		options[keyval[0]] = keyval[1]
+	}
+
+	return newTagOptions(options)
+}
+
+func newTagOptions(options map[string]string) *tagOptions {
+	topts := new(tagOptions)
+	for k, v := range options {
+		switch k {
+		case "bits":
+			num, err := strconv.ParseUint(v, 10, 32)
+			if err != nil {
+				continue
+			}
+			topts.bits = uint(num)
+		}
+	}
+	return topts
 }
 
 type Encoder struct {
