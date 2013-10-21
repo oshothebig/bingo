@@ -1,6 +1,9 @@
 package bingo
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func benchMarshal(b *testing.B, v interface{}) {
 	b.ResetTimer()
@@ -139,4 +142,26 @@ func BenchmarkLeftShift32768(b *testing.B) {
 	n := uint(32768)
 	data := make([]byte, n)
 	benchShiftBytes(b, data, 1, leftShiftBytes)
+}
+
+type reflectStruct struct {
+	A uint32
+	B uint8
+}
+
+func BenchmarkNormalSet(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		v := reflectStruct{}
+		v.A = 100
+		v.B = 200
+	}
+}
+
+func BenchmarkReflectSet(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		v := reflectStruct{}
+		rv := reflect.ValueOf(&v)
+		rv.Elem().Field(0).SetUint(100)
+		rv.Elem().Field(1).SetUint(200)
+	}
 }
